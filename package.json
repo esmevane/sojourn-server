@@ -1,0 +1,19 @@
+{
+  "name": "sojourn-server",
+  "version": "0.0.1",
+  "description": "A node sojourn hub hub",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "chai": "^4.1.2",
+    "mocha": "^4.0.1"
+  },
+  "dependencies": {
+    "server": "^1.0.1"
+  }
+}
