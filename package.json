@@ -4,16 +4,24 @@
   "description": "A node sojourn hub hub",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node src"
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
-  "devDependencies": {
-    "chai": "^4.1.2",
-    "mocha": "^4.0.1"
-  },
+  "license": "UNLICENSED",
+  "devDependencies": {},
   "dependencies": {
-    "server": "^1.0.1"
+    "apollo-server-express": "^1.2.0",
+    "body-parser": "^1.18.2",
+    "cors": "^2.8.4",
+    "express": "^4.16.2",
+    "graphql": "^0.11.7",
+    "graphql-subscriptions": "^0.5.4",
+    "graphql-tools": "^2.7.2",
+    "graphql-type-json": "^0.1.4",
+    "lodash.filter": "^4.6.0",
+    "lodash.find": "^4.6.0",
+    "subscriptions-transport-ws": "^0.9.1",
+    "uuid": "^3.1.0"
   }
 }
