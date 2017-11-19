@@ -1,5 +1,26 @@
 const { makeExecutableSchema } = require('graphql-tools')
-const typeDefs = require('./typeDefs')
 const resolvers = require('./resolvers')
 
-module.exports = makeExecutableSchema({ typeDefs, resolvers })
+const Domains = require('./domains')
+const Mutation = require('./mutation')
+const Query = require('./query')
+const Subscription = require('./subscription')
+
+const Schema = `
+  schema {
+    query: Query
+    mutation: Mutation
+    subscription: Subscription
+  }
+`
+
+const types = [
+  Schema,
+  Query,
+  Mutation,
+  Subscription,
+  Domains.Events,
+  Domains.Hubs
+]
+
+module.exports = makeExecutableSchema({ typeDefs: types, resolvers })
