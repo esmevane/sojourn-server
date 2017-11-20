@@ -4,7 +4,8 @@
   "description": "A node sojourn hub hub",
   "main": "index.js",
   "scripts": {
-    "start": "node src"
+    "build": "tsc",
+    "start": "yarn build && node dist"
   },
   "keywords": [],
   "author": "",

@@ -48,4 +48,4 @@ const Domains = {
   Hubs: () => [Account, Hub, InternetAddress, Note]
 }
 
-module.exports = Domains
+export default Domains

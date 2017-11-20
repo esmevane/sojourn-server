@@ -1,8 +1,8 @@
-const uuid = require('uuid')
-const find = require('lodash.find')
-const filter = require('lodash.filter')
-const Json = require('graphql-type-json')
-const { PubSub } = require('graphql-subscriptions')
+import uuid from 'uuid'
+import find from 'lodash.find'
+import filter from 'lodash.filter'
+import Json from 'graphql-type-json'
+import { PubSub } from 'graphql-subscriptions'
 
 const pubSub = new PubSub()
 
@@ -117,7 +117,7 @@ const Note = {
   owner: note => find(accounts, account => account.id === note.ownerId)
 }
 
-module.exports = {
+export default {
   Account,
   Hub,
   Json,
