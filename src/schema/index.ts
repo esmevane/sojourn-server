@@ -1,3 +1,5 @@
+import { ITypeDefinitions } from 'graphql-tools/dist/Interfaces';
+
 import { makeExecutableSchema } from 'graphql-tools'
 import resolvers from './resolvers'
 
@@ -14,7 +16,7 @@ const Schema = `
   }
 `
 
-const types = [
+const types: ITypeDefinitions = [
   Schema,
   Query,
   Mutation,

@@ -1,19 +1,19 @@
-const { execute, subscribe } = require('graphql')
-const schema = require('./schema')
+const { execute, subscribe } = require("graphql");
+const schema = require("./schema");
 
-const createConfig = server => {
-  const Port = 3001
-  const Host = 'localhost'
+const createConfig = (server: any) => {
+  const Port = 3001;
+  const Host = "localhost";
 
   const Paths = {
-    api: '/graphql',
-    debug: '/graphiql',
-    sockets: '/subscriptions'
-  }
+    api: "/graphql",
+    debug: "/graphiql",
+    sockets: "/subscriptions"
+  };
 
   const Uris = {
     sockets: `ws://${Host}:${Port}${Paths.sockets}`
-  }
+  };
 
   return {
     Port,
@@ -21,8 +21,8 @@ const createConfig = server => {
     Paths,
     Uris,
     Graph: { execute, subscribe, schema },
-    Server: { server, path: '/subscriptions' }
-  }
-}
+    Server: { server, path: "/subscriptions" }
+  };
+};
 
-module.exports = createConfig
+export default createConfig;

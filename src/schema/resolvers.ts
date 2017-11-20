@@ -1,128 +1,208 @@
-import uuid from 'uuid'
-import find from 'lodash.find'
-import filter from 'lodash.filter'
-import Json from 'graphql-type-json'
-import { PubSub } from 'graphql-subscriptions'
+import uuid from "uuid";
+import find from "lodash.find";
+import filter from "lodash.filter";
+import Json from "graphql-type-json";
+import { PubSub } from "graphql-subscriptions";
+import { IResolvers } from "graphql-tools/dist/Interfaces";
 
-const pubSub = new PubSub()
+const pubSub = new PubSub();
 
-class Accounts {
-  constructor(username, hub) {
-    this.id = uuid.v4()
-    this.username = username
-    this.hubId = hub.id
+type Id = string;
+type Maybe<T> = T | void;
+
+type CreateAccount = (_: any, options: AccountOptions) => Accounts;
+type CreateHub = (_: any, options: HubOptions) => Hubs;
+type CreateNote = (_: any, options: NoteOptions) => Notes;
+
+interface HubOptions {
+  name: string;
+}
+
+interface NoteOptions {
+  content: string;
+  ownerId: Id;
+}
+
+interface MutationResolver {
+  createAccount: CreateAccount;
+  createHub: CreateHub;
+  createNote: CreateNote;
+}
+
+interface Identifiable {
+  id: Id;
+}
+
+interface AccountOptions {
+  username: string;
+  hubId: Id;
+}
+
+type AccountHub = (account: Accounts) => Maybe<Hubs>;
+
+interface AccountRelationships {
+  hub: AccountHub;
+}
+
+type HubAccounts = (hub: Hubs) => Accounts[];
+
+interface HubRelationships {
+  accounts: HubAccounts;
+}
+
+type NoteOwner = (note: Notes) => Maybe<Accounts>;
+
+interface NoteRelationships {
+  owner: NoteOwner;
+}
+
+interface QueryResolver {
+  accounts: () => Promise<Accounts[]>;
+  hubs: () => Promise<Hubs[]>;
+  notes: () => Promise<Notes[]>;
+}
+
+class Accounts implements Identifiable {
+  id: Id;
+  hubId: string;
+  username: string;
+
+  constructor(username: string, hub: Hubs) {
+    this.id = uuid.v4();
+    this.username = username;
+    this.hubId = hub.id;
   }
 }
 
-class Hubs {
-  constructor(name) {
-    this.id = uuid.v4()
-    this.name = name
+class Hubs implements Identifiable {
+  id: Id;
+  name: string;
+
+  constructor(name: string) {
+    this.id = uuid.v4();
+    this.name = name;
   }
 }
 
-class Notes {
-  constructor(content, owner) {
-    this.id = uuid.v4()
-    this.ownerId = owner.id
-    this.content = content
+class Notes implements Identifiable {
+  id: Id;
+  ownerId: string;
+  content: string;
+
+  constructor(content: string, owner: Accounts) {
+    this.id = uuid.v4();
+    this.ownerId = owner.id;
+    this.content = content;
   }
 }
 
-const accounts = []
-const hubs = []
-const notes = []
+const accounts: Accounts[] = [];
+const hubs: Hubs[] = [];
+const notes: Notes[] = [];
 
-const Query = {
+const Query: QueryResolver = {
   hubs: async () => hubs,
   accounts: async () => accounts,
   notes: async () => notes
-}
+};
 
-const Topics = {
-  Events: 'events',
-  Accounts: { Base: 'events:accounts', Created: 'events:accounts:created' },
-  Hubs: { Base: 'events:hubs', Created: 'events:hubs:created' },
-  Notes: { Base: 'events:notes', Created: 'events:notes:created' }
-}
+const Topics: any = {
+  Events: "events",
+  Accounts: { Base: "events:accounts", Created: "events:accounts:created" },
+  Hubs: { Base: "events:hubs", Created: "events:hubs:created" },
+  Notes: { Base: "events:notes", Created: "events:notes:created" }
+};
 
 const Subscription = {
   events: {
     subscribe: () => pubSub.asyncIterator(Topics.Events)
   }
-}
+};
 
-const emitEvent = content => ({
+const emitEvent = (content: any) => ({
   events: content
-})
+});
 
-const createdAccount = account =>
+const createdAccount = (account: Accounts) =>
   emitEvent({
     topic: Topics.Accounts.Created,
     payload: account
-  })
+  });
 
-const createdHub = hub =>
+const createdHub = (hub: Hubs) =>
   emitEvent({
     topic: Topics.Hubs.Created,
     payload: hub
-  })
+  });
 
-const createdNote = note =>
+const createdNote = (note: Notes) =>
   emitEvent({
     topic: Topics.Notes.Created,
     payload: note
-  })
+  });
 
-const Mutation = {
-  createAccount: (_, { username, hubId }) => {
-    const hub = find(hubs, hub => hub.id === hubId)
-    const account = new Accounts(username, hub)
+const createAccount: CreateAccount = (_, { username, hubId }) => {
+  const hub: Maybe<Hubs> = find(hubs, hub => hub.id === hubId);
+  const account: Accounts = new Accounts(username, hub || new Hubs("Unknown"));
 
-    accounts.push(account)
-    pubSub.publish(Topics.Events, createdAccount(account))
+  accounts.push(account);
+  pubSub.publish(Topics.Events, createdAccount(account));
 
-    return account
-  },
+  return account;
+};
 
-  createHub: (_, { name }) => {
-    const hub = new Hubs(name)
+const createHub: CreateHub = (_, { name }) => {
+  const hub: Hubs = new Hubs(name);
 
-    hubs.push(hub)
-    pubSub.publish(Topics.Events, createdHub(hub))
+  hubs.push(hub);
+  pubSub.publish(Topics.Events, createdHub(hub));
 
-    return hub
-  },
+  return hub;
+};
 
-  createNote: (_, { content, ownerId }) => {
-    const owner = find(accounts, account => account.id === ownerId)
-    const note = new Notes(content, owner)
+const createNote: CreateNote = (_, { content, ownerId }) => {
+  const owner: Maybe<Accounts> = find(
+    accounts,
+    account => account.id === ownerId
+  );
 
-    notes.push(note)
-    pubSub.publish(Topics.Events, createdNote(note))
+  const note = new Notes(
+    content,
+    owner || createAccount(undefined, { username: "Unknown", hubId: "Unknown" })
+  );
 
-    return note
-  }
-}
+  notes.push(note);
+  pubSub.publish(Topics.Events, createdNote(note));
 
-const Hub = {
+  return note;
+};
+
+const Mutation: MutationResolver = {
+  createAccount,
+  createHub,
+  createNote
+};
+
+const Hub: HubRelationships = {
   accounts: hub => filter(accounts, account => hub.id === account.hubId)
-}
+};
 
-const Account = {
+const Account: AccountRelationships = {
   hub: account => find(hubs, hub => hub.id === account.hubId)
-}
+};
 
-const Note = {
+const Note: NoteRelationships = {
   owner: note => find(accounts, account => account.id === note.ownerId)
-}
+};
 
-export default {
-  Account,
-  Hub,
-  Json,
-  Note,
-  Mutation,
-  Query,
-  Subscription
-}
+const resolvers: IResolvers = {
+  Account: () => Account,
+  Hub: () => Hub,
+  Json: () => Json,
+  Note: () => Note,
+  Mutation: () => Mutation,
+  Query: () => Query,
+  Subscription: () => Subscription
+};
+
+export default resolvers;
