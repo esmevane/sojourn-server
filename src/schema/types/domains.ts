@@ -45,7 +45,7 @@ const Note = `
 
 const Domains = {
   Events: () => [Event, Json],
-  Hubs: () => [Account, Hub, InternetAddress, Note]
+  Hubs: () => [Account, Hub, InternetAddress, Note],
 }
 
-module.exports = Domains
+export default Domains
